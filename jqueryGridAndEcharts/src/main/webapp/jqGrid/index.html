@@ -1,0 +1,329 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="cn">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<!-- jqGrid组件基础样式包-必要 -->
+		<link rel="stylesheet" href="jqgrid/css/ui.jqgrid.css" />
+
+		<!-- jqGrid主题包-非必要 -->
+		<!--在jqgrid/css/css这个目录下还有其他的主题包，可以尝试更换看效果 -->
+		<link rel="stylesheet" href="jqgrid/css/css/redmond/jquery-ui-1.8.16.custom.css" />-->
+
+		<!-- jquery插件包-必要 -->
+		<!-- 这个是所有jquery插件的基础，首先第一个引入 -->
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+
+		<!-- jqGrid插件包-必要 -->
+		<script type="text/javascript" src="jqgrid/js/jquery.jqGrid.src.js"></script>
+
+		<!-- jqGrid插件的多语言包-非必要 -->
+		<!-- 在jqgrid/js/i18n下还有其他的多语言包，可以尝试更换看效果 -->
+		<script type="text/javascript" src="jqgrid/js/i18n/grid.locale-cn.js"></script>
+		<title>http://blog.mn886.net/jqGrid</title>
+
+		<!-- 本页面初始化用到的js包，创建jqGrid的代码就在里面 -->
+		 <script type="text/javascript" src="js/index.js"></script> 
+	</head>
+
+	<body>
+		<div id="form_div">
+			<form id="search_form">
+				<input type="text" name="invdate" />
+			</form>
+		</div>
+		<div>
+			<button id="selectOneRow">选中某行</button>
+			<button id="letOneSelect">让某行选中</button>
+			<button id="deleteData">删除</button>
+			<button id="addTem">添加</button>
+			<button id="updateTem">修改</button>
+			<button id="button_search">查询</button>
+		</div>
+		<table id="list2"></table>
+		<div id="pager2"></div>
+		<br>
+		<script>
+			/**
+			 * 使用test方法实现模糊查询-----前模糊匹配
+			 * @param  {Array}  list     原数组
+			 * @param  {String} keyWord  查询的关键词
+			 * @return {Array}           查询的结果
+			 */
+			fuzzyQuery("好发撒孩子", "好发");
+
+			function fuzzyQuery(list, keyWord) {
+				var reg = new RegExp("/^" + keyWord + "/");
+				for(var i = 0; i < list.length; i++) {
+					if(reg.test(list.substring(0, i))) {
+						console.log(list) //这里获取符合的字符
+					}
+				}
+			}
+			$("#button_search").click(function() {
+				var keyWord = $("#search_form input[name='invdate']").val();
+
+				for(var i = 0; i < mydata.length; i++) {
+					var rowData = mydata[i];
+					var msg = rowData.invdate;
+
+					var reg = new RegExp("^" + keyWord);
+					for(var j = 0; j < msg.length; j++) {
+						if(reg.test(msg.substring(0, j))) {
+							console.log("--")
+							jQuery("#list2").jqGrid('addRowData', i + 1, mydata[i]);
+						}
+					}
+
+				}
+
+			})
+
+			$().removeData()
+			//选中某行-------选中的是一个数组-------["1","2","3","4"]
+			$("#selectOneRow").click(() 0> {
+				var s = $("#list2").jqGrid('getGridParam', 'selarrrow');
+				alert("选中了啥" + s)
+			});
+			//让某行选中
+			$("#letOneSelect").click(() => {
+				jQuery("#list2").jqGrid('setSelection', "3");
+			});
+			//选中删除
+			$("#deleteData").click(() => {
+				var sequence = $("#list2").jqGrid('getGridParam', 'selarrrow');
+				if(sequence.length == 0) {
+					return;
+				}
+				for(let s of sequence) {
+					console.log(s)
+					$("#list2").jqGrid('delRowData', s)
+				}
+				$("#list2").trigger("reloadGrid");
+			});
+
+			/**
+			 * 添加的样式
+			 */
+			$("#addTem").click(() => {
+					// editModal("","post","new");
+					jQuery("#list2").jqGrid('editGridRow', "new", {
+						height: 300,
+						reloadAfterSubmit: false
+					});
+				}) /
+
+				//修改的样式
+				$("#updateTem").click(function() {
+					var s = $("#list2").jqGrid('getGridParam', 'selarrrow');
+					if(s.length > 1) {
+						alert("只能选择一行进行编辑");
+						return;
+					}
+					editModal("", "post", s); //将编辑的tem的ID获取过来.
+				});
+
+			/**
+			 * 编辑的模态框
+			 */
+			editModal = (url, type, orNewTem) => {
+				jQuery("#list2").jqGrid('editGridRow', orNewTem, {
+					url: url,
+					type: type,
+					top: 150,
+					left: 450,
+					height: 300,
+					width: 500,
+					reloadAfterSubmit: true
+				});
+			}
+
+			$(function() {
+				//页面加载完成之后执行
+				pageInit();
+			});
+
+			function pageInit() {
+				//创建jqGrid组件
+				jQuery("#list2").jqGrid({
+					// url : 'data/JSONData.json',//组件创建完成之后请求数据的url
+					datatype: "local", //请求数据返回的类型。可选json,xml,txt
+										colNames: ['Inv No', 'Date', 'Client', 'Amount', 'Tax', 'Total', 'Notes'], //jqGrid的列显示名字
+					colModel: [ //jqGrid每一列的配置信息。包括名字，索引，宽度,对齐方式.....
+						{
+							name: 'id',
+							index: 'id',
+							width: 55,
+							text: 'Inv No',
+							editable: true
+						},
+						{
+							name: 'invdate',
+							text: 'Inv No',
+							index: 'invdate',
+							width: 90,
+							editable: true
+						},
+						{
+							name: 'name',
+							index: 'name asc, invdate',
+							text: 'Inv No',
+							width: 100,
+							editable: true
+						},
+						{
+							name: 'amount',
+							text: 'Inv No',
+							index: 'amount',
+							width: 80,
+							align: "right",
+							editable: true
+						},
+						{
+							name: 'tax',
+							index: 'tax',
+							text: 'Inv No',
+							width: 80,
+							align: "right",
+							editable: true
+						},
+						{
+							name: 'total',
+							index: 'total',
+							width: 80,
+							text: 'Inv No',
+							align: "right",
+							editable: true
+						},
+						{
+							name: 'note',
+							index: 'note',
+							text: 'Inv No',
+							width: 150,
+							sortable: false,
+							editable: true
+						}
+					],
+					multiselect: true,
+					rowNum: 10, //一页显示多少条
+					width: "100%",
+					autowidth: true,
+					height: "100%",
+					rowList: [10, 20, 30], //可供用户选择一页显示多少条
+					pager: '#pager2', //表格页脚的占位符(一般是div)的id
+					sortname: 'id', //初始化的时候排序的字段
+					sortorder: "desc", //排序方式,可选desc,asc
+					mtype: "post", //向后台请求数据的ajax的类型。可选post,get
+					viewrecords: true,
+					caption: "JSON Example", //表格的标题名字
+					jsonReader: {
+						root: "rows", // json中代表实际模型数据的入口
+						page: "page", // json中代表当前页码的数据
+						total: "total", // json中代表页码总数的数据
+						records: "records", // json中代表数据行总数的数据
+						repeatitems: false, // 如果设为false，则jqGrid在解析json时，会根据name来搜索对应的数据元素（即可以json中元素可以不按顺序）；而所使用的name是来自于colModel中的name设定。
+						cell: "cell",
+						id: "id",
+						userdata: "userdata",
+					}
+				});
+				/*创建jqGrid的操作按钮容器*/
+				/*可以控制界面上增删改查的按钮是否显示*/
+				// jQuery("#list2").jqGrid('navGrid', '#pager2', {
+				// 	search:false,
+				// 	edit: false,
+				// 	add: false,
+				// 	del: false
+				// });
+
+				mydata = [{
+						id: "1",
+						invdate: "aabb",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "2",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "3",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "4",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "5",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "6",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "7",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "8",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					},
+					{
+						id: "9",
+						invdate: "polaris",
+						name: "男",
+						amount: "fef@163.com",
+						tax: "33334444",
+						total: "13223423424",
+						note: "1985-10-01"
+					}
+				];
+				for(var i = 0; i <= mydata.length; i++) {
+					jQuery("#list2").jqGrid('addRowData', i + 1, mydata[i]);
+				}
+
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+
+<!--    <context:property-placeholder ignore-unresolvable="true" location="classpath:shiro_cas.properties"/>-->
+
+
+    <!-- 自动注入properties属性文件 -->
+    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:shiro_cas.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+        <property name="properties" ref="configProperties" />
+    </bean>
+
+    <!-- 会话Cookie模板 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="180000"/>
+    </bean>
+
+    <!-- 会话ID生成器 -->
+    <bean id="sessionIdGenerator"
+          class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+    <!-- 会话DAO -->
+    <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <!--直接采用session的生成-->
+        <property name="activeSessionsCacheName" value="shiro-activeSessionCache"/>
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+    </bean>
+    <!-- 会话管理器 -->
+    <bean id="sessionManager"
+          class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="1800000"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean>
+
+    <bean id="myRealm" class="com.Realm"/>
+<!--    <bean id="myCasRealm" class="com.MyCasRealm"/>-->
+    <!-- 单点登录过滤器 -->
+    <bean id="casFilter" class="org.apache.shiro.cas.CasFilter">
+        <!-- 配置验证成功时跳转的URL -->
+        <property name="successUrl" value="${shiro.successUrl}"/>
+        <!-- 配置验证错误时跳转的URL -->
+        <property name="failureUrl" value="${shiro.failureUrl}"/>
+    </bean>
+
+    <!--单点登出过滤器-->
+    <bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">
+        <!-- 注销时重定向的URL -->
+        <property name="redirectUrl" value="${shiro.logoutUrl}"/>
+    </bean>
+    <!-- 注册自定义CasRealm -->
+    <bean id="casRealm" class="com.MyCasRealm">
+        <!-- cas服务端地址前缀,作为ticket校验 -->
+        <property name="casServerUrlPrefix" value="${shiro.cas.serverUrlPrefix}"/>
+        <!-- 应用服务地址,用来接收CAS服务端的票据 -->
+        <property name="casService" value="${shiro.cas.service}"/>
+    </bean>
+    <bean id="casSubjectFactory" class="org.apache.shiro.cas.CasSubjectFactory"></bean>
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!--<property name="com.realm" ref="myRealm"/>-->
+        <property name="subjectFactory" ref="casSubjectFactory"/>
+        <property name="realm" ref="casRealm" />
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+    <!-- Shiro的Web过滤器 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!--身份认证失败，跳转到登录路径-->
+        <property name="loginUrl" value="${shiro.loginURL}"/>
+        <!-- 将Filter添加到Shiro过滤器链中,用于对资源设置权限 -->
+        <property name="filters">
+            <map>
+                <entry key="casFilter" value-ref="casFilter"/>
+                <entry key="logoutFilter" value-ref="logoutFilter"/>
+            </map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                /casLogin = casFilter
+                /logout = logoutFilter
+                /test/hello = authc
+                /** = authc
+            </value>
+        </property>
+    </bean>
+
+</beans>

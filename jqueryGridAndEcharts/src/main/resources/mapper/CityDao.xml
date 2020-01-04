@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.CityDao">
+    <resultMap id="map" type="java.util.HashMap">
+        <id column="ID" property="id"/>
+        <id column="Name" property="name"/>
+        <id column="CountryCode" property="countryCode" />
+        <id column="District" property="district" />
+        <id column="Population" property="population"/>
+        <id column="status" property="status" />
+        <id column="sex" property="sex"/>
+        <id column="birthday" property="birthday" javaType="java.util.Date" />
+        <id column="createTime" property="createTime" javaType="java.util.Date"/>
+    </resultMap>
+
+    <sql id="param">
+        c.ID id,c.Name name,c.CountryCode countryCode,
+        c.District district,
+        c.Population population,
+        status,sex,birthday,createTime
+    </sql>
+
+    <sql id="exportSql">
+        c.ID "编号",c.Name "名称",c.CountryCode "城市编码",
+        c.District "区域",
+        c.Population "人口",
+        status "状态",sex "性别",birthday "生日",createTime "创建时间"
+    </sql>
+
+    <select id="getExportSqlList" parameterType="map" resultMap="map">
+        select <include refid="exportSql"/>
+        from city as c
+    </select>
+<select id="getAll" parameterType="map" resultMap="map">
+    select <include refid="param"/>
+    from city as c
+</select>
+
+    <select id="getDynamicCitys" parameterType="map" resultMap="map">
+        select <include refid="param"/>
+        from city as c
+        <where>
+            <if test="id != null and id != '' ">
+                c.ID LIKE concat(concat('%',#{id} ),'%')
+            </if>
+            <if test="name!=null and name !='' ">
+                and  c.Name LIKE concat(concat('%',#{name} ),'%')
+            </if>
+            <if test="countryCode!=null and countryCode != '' ">
+                and  c.CountryCode LIKE concat(concat('%',#{countryCode} ),'%')
+            </if>
+            <if test="district!=null and district != '' ">
+                and  c.District LIKE concat(concat('%',#{district} ),'%')
+            </if>
+            <if test="population!=null and population != '' ">
+                and  c.Population LIKE concat(concat('%',#{population} ),'%')
+            </if>
+        </where>
+        order by ${sidx} ${sord}
+    </select>
+    <select id="getErJi" parameterType="map" resultMap="map">
+        select *from city where id like '%07%'
+    </select>
+</mapper>

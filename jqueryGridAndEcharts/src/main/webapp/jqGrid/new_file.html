@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="js/jquery-3.3.1.min.js"></script>
+	</head>
+
+	<body>
+		<script>
+<<<<<<< HEAD
+	 /**
+   * 使用test方法实现模糊查询-----前模糊匹配
+   * @param  {Array}  list     原数组
+   * @param  {String} keyWord  查询的关键词
+   * @return {Array}           查询的结果
+   */
+    fuzzyQuery("好发撒孩子","好发");
+  function fuzzyQuery(list, keyWord) {
+    var reg =  new RegExp(keyWord);
+    for (var i = 0; i < list.length; i++) {
+      if (reg.test(list.substring(0,i))) {
+         console.log(list)//这里获取符合的字符
+      }
+    }
+  }
+  
+  var arr=[{a:"a",b:"b"},{a:"c",b:"d"}]
+  console.log(arr[0].a)
+=======
+			var num1=30.42;var num2=50.24;
+			var percent=Math.round(num1/num2 *100)+"%";
+			alert(percent)
+>>>>>>> def9078a114017a5e63ece621ba4f5d3eb3ea5c0
+		</script>
+	</body>
+
+</html>
