@@ -2,11 +2,11 @@ package com.controller;
 
 import com.ExcelUtils;
 import com.dao.CityDao;
+import com.dao.PeopleDao;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pojo.JqGridData;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Workbook;
+import com.pojo.People;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +30,9 @@ import java.util.*;
 public class IndexController {
     @Autowired
     CityDao cityDao;
+
+    @Autowired
+    PeopleDao peopleDao;
 
     /**
      * 获取city的数据
@@ -59,7 +62,38 @@ public class IndexController {
         data.setTotal(info.getPages());
         return data;
     }
+    @RequestMapping(value = "/getSubCity")
+    @ResponseBody
+    public  Map<String, Object> getSubCity(HttpServletRequest request){
+        System.out.println("-------------------------------");
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String,Object>paramterNewMap=new HashMap<>();
+        for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+            System.out.println(entry.getKey() + "-------------" + entry.getValue()[0]);
+            paramterNewMap.put(entry.getKey(),entry.getValue()[0]);
+        }
+//        Integer pageNum=Integer.parseInt(request.getParameter("page"));
+//        Integer pageSize=Integer.parseInt(request.getParameter("rows"));
+//        PageHelper.startPage(pageNum,pageSize);
+        List<Map<String, Object>> all = cityDao.getLimit();
+        Map<String, Object> map = JqGridData.getJsonReaderData(all);
+        return map;
+    }
 
+    @RequestMapping(value = "/fdsafsad2")
+    @ResponseBody
+    public String fdsafsad2(){
+        String s="af";
+        Integer a=32;
+        return "fasdfaf";
+    }
+    @RequestMapping(value = "/fdsafsad3")
+    @ResponseBody
+    public List<People> fdsafsad3(){
+        List<People> gegt = peopleDao.GEGT();
+        gegt.forEach(t-> System.out.println(t));
+        return gegt;
+    }
 
     @RequestMapping(value = "/getErJi")
     @ResponseBody

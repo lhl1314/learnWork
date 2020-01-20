@@ -16,8 +16,9 @@ public interface CityDao {
      * @return
      */
     List<Map<String,Object>> getAll();
-
-    /**
+    List<Map<String,Object>> getLimit();
+    List<Map<String,Object>> getJrebel();
+    /**getLimit
      * 获取导出的数据，这里可以根据具体需求查询所要导出的数据
      *
      * @return

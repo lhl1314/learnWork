@@ -36,7 +36,14 @@
     select <include refid="param"/>
     from city as c
 </select>
-
+    <select id="getJrebel" parameterType="map" resultMap="map">
+        select <include refid="param"/>
+        from city as c limit 10
+    </select>
+    <select id="getLimit" parameterType="map" resultMap="map">
+        select <include refid="param"/>
+        from city as c limit 4
+    </select>
     <select id="getDynamicCitys" parameterType="map" resultMap="map">
         select <include refid="param"/>
         from city as c

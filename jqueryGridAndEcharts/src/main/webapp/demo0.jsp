@@ -48,11 +48,42 @@
     <button id="getOneRow">获取选中的行的ID</button>
     <button id="hideNameColumn">隐藏name列</button>
     <button id="showNameColumn">显示name列</button>
+
+    <button id="addOtherList">添加副表数据</button>
 </div>
 
 <table id="list2"></table>
 <div id="pager2"></div>
+<hr/>
+<table id="otherList"></table>
+<div id="otherListPage"></div>
 <script>
+    /**添加副表的数据
+     */
+    $("#addOtherList").click(function () {
+        var selectId=jQuery("#list2").jqGrid('getGridParam', 'selarrrow');//获取选中行的ID
+        if (selectId.length<=0){
+            alert("请选择")
+            return false;
+        }
+        var reccount = $("#otherList").getGridParam("reccount");
+        for (var i=0;i<selectId.length;i++){
+            var rowdata = $("#list2").jqGrid('getRowData', selectId[i]);//获取每一行的数据
+            reccount+=1;
+            $("#otherList").jqGrid('addRowData', reccount, {
+                "id":rowdata['id'],
+                "name":rowdata['name'],
+                "countryCode":rowdata['countryCode'],
+                "district":rowdata['district'],
+                "population":rowdata['population'],
+                "status":rowdata['status'],
+                "sex":rowdata['sex'],
+                "birthday":rowdata['birthday'],
+                "birthday":rowdata['createTime']
+            },"first");
+        }
+    });
+
     /**导出
      * */
     $("#daochu").click(function () {
@@ -104,7 +135,7 @@
                         }
                     }
                 ],
-                rowNum: 20,
+                rowNum: 8,
                 rowList: [10, 20, 30],
                 pager: '#pager2',
                 sortname: 'id',//初始化的时候排序字段
@@ -112,23 +143,72 @@
                 viewrecords: true,
                 sortorder: "desc",//排序类型
                 multiselect : true,//开启多选
+                subGrid : true,//开启多级表格
+                subGridUrl : '/getSubCity',//多级表格请求路径
+                subGridModel : [ {
+                    name : [ 'id', 'name', 'countryCode', 'district', 'population'],
+                    width : [ 55, 200, 80, 80, 80 ]
+                } ],
                 autowidth: true,
                 shrinkToFit: true,
-                height: 400,
+                height: 200,
                 rownumbers: true,//自动计算编号
                 caption: "JSON 实例",
                 onSelectRow : function(ids) {
                     console.log(ids);//获取到的是这行的ID,然后再根据id获取其他的东西吧。
-                            jQuery("#list2_2").jqGrid(
-                                'setGridParam',
-                                {
-                                    url :"/getErJi",
-                                    page : 2
-                                }).trigger("reloadGrid");//必须要重载表格呀。
-                    // $("#list2_2").trigger("reloadGrid");
+                    var select=jQuery("#list2").jqGrid('getRowData', ids);
                 }
             });
         jQuery("#list2").jqGrid('navGrid', '#pager2', {edit: false, add: false, del: false});
+        jQuery("#otherList").jqGrid(
+            {
+                url: '',
+                datatype: "local",
+                colNames: ['id', 'name', 'countryCode', 'district', 'population', 'status', 'sex', 'birthday', 'createTime'],
+                colModel: [
+                    {name: 'id', align: 'center', index: 'id', classes: 'myId', sortable: true},
+                    {name: 'name', align: 'center',sortable: false, index: 'name'},
+                    {name: 'countryCode', align: 'center',sortable: false, index: 'countryCode'},
+                    {name: 'district', align: 'center', sortable: false,index: 'district'},
+                    {name: 'population', align: 'center',sortable: false, index: 'population'},
+                    {name: 'status', index: 'status',sortable: false, align: 'center'},
+                    {name: 'sex', index: 'sex', align: 'center', sortable: false},
+                    {
+                        name: 'birthday', index: 'birthday', sortable: false, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            return (moment(rowObject.birthday).format("YYYY-MM-DD"));
+                        }
+                    },
+                    {
+                        name: 'createTime', index: 'createTime', sortable: false, width: 200, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            return (moment(rowObject.createTime).format("YYYY-MM-DD HH:mm:ss"));
+                        }
+                    }
+                ],
+                rowNum: 8,
+                rowList: [10, 20, 30],
+                pager: '#otherListPage',
+                sortname: 'id',//初始化的时候排序字段
+                mtype: "post",//提交的方式
+                viewrecords: true,
+                sortorder: "desc",//排序类型
+                // multiselect : true,//开启多选
+                autowidth: true,
+                shrinkToFit: true,
+                height: 200,
+                rownumbers: true,//自动计算编号
+                caption: "JSON 实例",
+                onSelectRow : function(ids) {
+                    console.log(ids);//获取到的是这行的ID,然后再根据id获取其他的东西吧。
+                    var select=jQuery("#list2").jqGrid('getRowData', ids);
+                    console.log(select);
+                }
+            });
+
+
+
+        jQuery("#otherList").jqGrid('navGrid', '#otherListPage', {edit: false, add: false, del: false});
         /**
          * 搜索时候重载表格数据
          */
