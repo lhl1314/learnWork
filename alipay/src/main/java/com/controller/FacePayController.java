@@ -117,10 +117,11 @@ public class FacePayController {
                     .setStoreId(storeId)
                     .setExtendParams(extendParams)
                     .setTimeoutExpress(timeoutExpress)
-                    .setNotifyUrl("http://www.test-notify-url.com/")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
+                    .setNotifyUrl("http://139.196.125.230:8083/facePay/notify_url")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                     .setGoodsDetailList(goodsDetailList);
 
             AlipayF2FPrecreateResult result = tradeService.tradePrecreate(builder);
+            String img=null;
             switch (result.getTradeStatus()) {
                 case SUCCESS:
                     log.info("支付宝预下单成功: )");
@@ -128,10 +129,28 @@ public class FacePayController {
                     AlipayTradePrecreateResponse res = result.getResponse();
 
                     String basePath = request.getSession().getServletContext().getRealPath("/");
-                    String fileName = String.format("images%sqr-%s.png", File.separator, res.getOutTradeNo());
+                    System.out.println("------------------");
+                    System.out.println("images%sqr-%s.png");
+                    System.out.println(File.separator);
+                    System.out.println(res.getOutTradeNo());
+//                    String fileName = String.format("images%sqr-%s.png", File.separator, res.getOutTradeNo());
+                    String fileName = String.format(File.separator+"images%sqr-%s.png", File.separator, res.getOutTradeNo());
                     String filePath = new StringBuilder(basePath).append(fileName).toString();
-                    out.println("<img src=\"" + fileName + "\" />");
-                    out.println("filePath:" + filePath);
+                    img="<img src=\"" + fileName + "\" />";
+
+                    System.out.println(fileName);
+                    System.out.println(img);
+//                    out.println("<!DOCTYPE html>\n" +
+//                            "<html>\n" +
+//                            "\t<head>\n" +
+//                            "\t\t<meta charset=\"UTF-8\">\n" +
+//                            "\t\t<title></title>\n" +
+//                            "\t</head>\n" +
+//                            "\t<body>\n" +
+//                            "\n" +img+
+//                            "\t</body>\n" +
+//                            "</html>\n");
+//                    out.println("filePath:" + filePath);
                     ZxingUtils.getQRCodeImge(res.getQrCode(), 256, filePath);
                     break;
 
@@ -147,8 +166,10 @@ public class FacePayController {
                     log.error("不支持的交易状态，交易返回异常!!!");
                     break;
             }
-            out.println(result.getResponse().getBody());
-            return;
+            System.out.println(result.getResponse().getBody());
+            out.println(img);
+//            out.println(result.getResponse().getBody());
+//            return;
         }
 
 
